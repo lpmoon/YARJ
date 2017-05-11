@@ -1,0 +1,11 @@
+com\lpmoon\StatisticsSummary$1.class
+com\lpmoon\transformer\StatisticsClassFileTransformer.class
+com\lpmoon\AttachMain$1.class
+com\lpmoon\AttachMain.class
+com\lpmoon\transformer\RestoreFileTransformer.class
+com\lpmoon\StatisticsSummary.class
+Test.class
+Test2.class
+com\lpmoon\Agent.class
+com\lpmoon\transformer\OldClassHolder.class
+com\lpmoon\Util\JvmUtil.class
