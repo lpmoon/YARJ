@@ -27,8 +27,7 @@ public class StatisticsClassFileTransformer implements ClassFileTransformer {
                     m.addLocalVariable("elapsedTime", CtClass.longType);
                     m.insertBefore("elapsedTime = System.currentTimeMillis();");
                     m.insertAfter("{elapsedTime = System.currentTimeMillis() - elapsedTime;"
-                        + "com.lpmoon.StatisticsSummary.incrementCount(\"" + className + "\", \"" + m.getName() + "\");"
-                        + "com.lpmoon.StatisticsSummary.incrementTime(\"" + className + "\", \"" + m.getName() + "\", elapsedTime);"
+                        + "com.lpmoon.reporter.SummaryFactory.getSummary(\"Codahale\").report(\"" + className + "\", \"" + m.getName() + "\", elapsedTime);"
                         + "System.out.println(\"" + className + "." + m.getName() + "cost \" + elapsedTime + \" ms\");}");
                     byteCode = cc.toBytecode();
                     cc.detach();

@@ -1,10 +1,5 @@
-.idea/compiler.xml
-.idea/copyright/
-.idea/misc.xml
-.idea/workspace.xml
+.idea/*
 src/main/resources/
 src/test/
-target/classes/
-target/maven-status
-target/generated-sources/
+target/*
 DynamicRecordJVM.iml
