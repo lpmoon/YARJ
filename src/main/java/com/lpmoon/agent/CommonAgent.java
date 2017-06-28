@@ -1,5 +1,6 @@
-package com.lpmoon;
+package com.lpmoon.agent;
 
+import com.lpmoon.agent.dynamic.DynamicAgent;
 import com.lpmoon.transformer.RestoreFileTransformer;
 import com.lpmoon.transformer.StatisticsClassFileTransformer;
 
@@ -11,14 +12,14 @@ import java.util.Vector;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Created by zblacker on 2017/5/9.
+ * Created by liupeng10 on 17/6/28.
  */
-public class Agent {
+public class CommonAgent {
     public static AtomicInteger switcher = new AtomicInteger();
 
-    public static void agentmain(String agentArgs, Instrumentation inst) throws ClassNotFoundException, UnmodifiableClassException,
+    public static void doAgent(String agentArgs, Instrumentation inst) throws ClassNotFoundException, UnmodifiableClassException,
             InterruptedException {
-        System.out.println("enter agent main");
+        System.out.println("enter agent main, parameter is " + agentArgs);
 
         ClassFileTransformer transformer = null;
         if (switcher.incrementAndGet() % 2 == 1) {
@@ -32,7 +33,7 @@ public class Agent {
         inst.addTransformer(transformer, true);
 
         try {
-            ClassLoader classLoader = Agent.class.getClassLoader();
+            ClassLoader classLoader = DynamicAgent.class.getClassLoader();
             Class classLoaderClazz = classLoader.getClass();
             while (classLoaderClazz != ClassLoader.class)
                 classLoaderClazz = classLoaderClazz.getSuperclass();

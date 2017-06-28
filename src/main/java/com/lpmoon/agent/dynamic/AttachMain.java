@@ -1,6 +1,6 @@
-package com.lpmoon;
+package com.lpmoon.agent.dynamic;
 
-import com.lpmoon.Util.JvmUtil;
+import com.lpmoon.util.JvmUtil;
 import com.sun.tools.attach.AttachNotSupportedException;
 import com.sun.tools.attach.VirtualMachine;
 
@@ -11,18 +11,18 @@ import java.io.IOException;
  */
 public class AttachMain extends Thread {
 
-    public void startAgent(String jar, String pid) throws Exception {
-        attach(jar, pid);
+    public void startAgent(String jar, String pid, String options) throws Exception {
+        attach(jar, pid, options);
     }
 
-    private void attach(String jar, String pid) throws Exception {
+    private void attach(String jar, String pid, String options) throws Exception {
         try {
             VirtualMachine vm = VirtualMachine.attach(pid);
             if (vm == null) {
                 throw new Exception("pid " + pid + "not exist");
             }
 
-            vm.loadAgent(jar);
+            vm.loadAgent(jar, options);
             vm.detach();
 
         } catch (AttachNotSupportedException e) {
@@ -37,7 +37,7 @@ public class AttachMain extends Thread {
             public void run()
             {
                 try {
-                    attach(jar, pid);
+                    attach(jar, pid, "");
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -57,11 +57,16 @@ public class AttachMain extends Thread {
             throw new Exception("pid must be a number");
         }
 
+        String options = "";
+        if (args.length > 1) {
+            options = args[1];
+        }
+
         String jar = JvmUtil.getCurrentExecuteJarPath();
         System.out.println("current jar path is " + jar);
         AttachMain attachMain = new AttachMain();
         System.out.println("start attach pid " + pid);
-        attachMain.startAgent(jar, pid);
+        attachMain.startAgent(jar, pid, options);
         attachMain.registerStopAgentHook(jar, pid);
         System.out.println("end attach pid " + pid);
 
