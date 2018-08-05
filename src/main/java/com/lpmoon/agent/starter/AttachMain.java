@@ -1,4 +1,4 @@
-package com.lpmoon.agent.dynamic;
+package com.lpmoon.agent.starter;
 
 import com.lpmoon.util.JvmUtil;
 import com.sun.tools.attach.AttachNotSupportedException;

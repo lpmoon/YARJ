@@ -42,7 +42,7 @@
                     </descriptorRefs>
                     <archive>
                         <manifestEntries>
-                            <Agent-Class>com.lpmoon.agent.dynamic.DynamicAgent</Agent-Class>
+                            <Agent-Class>com.lpmoon.agent.starter.Agent</Agent-Class>
                             <Premain-Clas>com.lpmoon.agent.startup.StaticAgent</Premain-Clas>
                             <Can-Redefine-Classes>true</Can-Redefine-Classes>
                             <Can-Retransform-Classes>true</Can-Retransform-Classes>

@@ -1,6 +1,6 @@
 package com.lpmoon.agent;
 
-import com.lpmoon.agent.dynamic.DynamicAgent;
+import com.lpmoon.agent.starter.Agent;
 import com.lpmoon.transformer.RestoreFileTransformer;
 import com.lpmoon.transformer.StatisticsClassFileTransformer;
 
@@ -33,7 +33,7 @@ public class CommonAgent {
         inst.addTransformer(transformer, true);
 
         try {
-            ClassLoader classLoader = DynamicAgent.class.getClassLoader();
+            ClassLoader classLoader = Agent.class.getClassLoader();
             Class classLoaderClazz = classLoader.getClass();
             while (classLoaderClazz != ClassLoader.class)
                 classLoaderClazz = classLoaderClazz.getSuperclass();
