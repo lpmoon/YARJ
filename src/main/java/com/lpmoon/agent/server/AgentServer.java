@@ -18,6 +18,10 @@ public class AgentServer {
     private Instrumentation instrumentation;
     private long startTime;
 
+    private CommandManager commandManager = new CommandManager();
+
+    public static AgentServer instance;
+
     public AgentServer(int port, Instrumentation inst) {
         this.port = port;
         this.instrumentation = inst;
@@ -25,12 +29,13 @@ public class AgentServer {
     }
 
     public void init() {
+        commandManager.init();
 
         // TODO 替换为可变的port
         try {
             Selector selector = Selector.open();
             ServerSocketChannel serverSocket = ServerSocketChannel.open();
-            serverSocket.bind(new InetSocketAddress("localhost", 31112));
+            serverSocket.bind(new InetSocketAddress("localhost", port));
             serverSocket.configureBlocking(false);
             serverSocket.register(selector, SelectionKey.OP_ACCEPT);
 
@@ -57,7 +62,7 @@ public class AgentServer {
                         } else if (bytesRead > 0) {
                             key.interestOps(SelectionKey.OP_READ | SelectionKey.OP_WRITE);
 
-                            CommandManager.handle(buf, clntChan);
+                            commandManager.handle(buf, clntChan, instrumentation);
                         }
                     }
 

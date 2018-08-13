@@ -1,4 +1,6 @@
-package com.lpmoon.transformer;
+package com.lpmoon.agent.transformer;
+
+import com.lpmoon.agent.util.OldClassHolder;
 
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;

@@ -1,6 +1,6 @@
 package com.lpmoon.agent.starter;
 
-import com.lpmoon.util.JvmUtil;
+import com.lpmoon.agent.util.JvmUtil;
 import com.sun.tools.attach.AttachNotSupportedException;
 import com.sun.tools.attach.VirtualMachine;
 

@@ -1,5 +1,6 @@
-package com.lpmoon.transformer;
+package com.lpmoon.agent.transformer;
 
+import com.lpmoon.agent.util.OldClassHolder;
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.CtMethod;
@@ -27,7 +28,7 @@ public class StatisticsClassFileTransformer implements ClassFileTransformer {
                     m.addLocalVariable("elapsedTime", CtClass.longType);
                     m.insertBefore("elapsedTime = System.currentTimeMillis();");
                     m.insertAfter("{elapsedTime = System.currentTimeMillis() - elapsedTime;"
-                        + "com.lpmoon.reporter.SummaryFactory.getSummary(\"Codahale\").report(\"" + className + "\", \"" + m.getName() + "\", elapsedTime);"
+                        + "com.lpmoon.agent.reporter.SummaryFactory.getSummary(\"Codahale\").report(\"" + className + "\", \"" + m.getName() + "\", elapsedTime);"
                         + "System.out.println(\"" + className + "." + m.getName() + "cost \" + elapsedTime + \" ms\");}");
                     byteCode = cc.toBytecode();
                     cc.detach();

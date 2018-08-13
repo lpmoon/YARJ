@@ -1,4 +1,4 @@
-package com.lpmoon.reporter;
+package com.lpmoon.agent.reporter;
 
 import com.codahale.metrics.ConsoleReporter;
 import com.codahale.metrics.Histogram;
