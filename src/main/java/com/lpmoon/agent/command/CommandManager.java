@@ -9,9 +9,7 @@ import java.net.JarURLConnection;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -47,23 +45,19 @@ public class CommandManager {
 
                                     boolean match = false;
                                     Class[] interfaces = cls.getInterfaces();
-                                    Annotation[] annotations = cls.getAnnotations();
+                                    Annotation annotation = cls.getAnnotation(CommandAnnotation.class);
                                     for (Class inter : interfaces) {
                                         if (inter == Command.class) {
-                                            for (Annotation annotation : annotations) {
-                                                if (annotation instanceof CommandAnnotation) {
-                                                    match = true;
-                                                    break;
-                                                }
-                                            }
-
-                                            if (match) {
+                                            System.out.println(className);
+                                            if (annotation != null) {
+                                                match = true;
                                                 break;
                                             }
                                         }
                                     }
 
                                     if (match) {
+                                        System.out.println(className);
                                         Constructor constructor = cls.getConstructor();
                                         Object command = constructor.newInstance();
                                         ((Command)command).init();
@@ -81,9 +75,25 @@ public class CommandManager {
     }
 
     public void handle(ByteBuffer buf, SocketChannel socketChannel, Instrumentation instrumentation) {
-        String data = new String(buf.array());
-        String command = data.substring(0, data.indexOf(' '));
-        String options = data.substring(data.indexOf(' ' + 1));
+        buf.flip();
+        List<Byte> dataBytes = new ArrayList<Byte>();
+        while (buf.hasRemaining()) {
+            dataBytes.add(buf.get());
+        }
+
+        byte[] bytes = new byte[dataBytes.size()];
+        for (int i = 0; i < bytes.length; i++) {
+            bytes[i] = dataBytes.get(i);
+        }
+
+        String data = new String(bytes);
+
+        int idx = data.indexOf(' ');
+        String command = data.substring(0, idx < 0 ? data.length() : idx);
+        String options = "";
+        if (idx > 0) {
+            options = data.substring(idx + 1);
+        }
 
         name2Command.get(command).handle(options, socketChannel, instrumentation);
     }

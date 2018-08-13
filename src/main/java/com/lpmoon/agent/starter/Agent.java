@@ -14,7 +14,12 @@ public class Agent {
     public static void agentmain(String agentArgs, Instrumentation inst) throws ClassNotFoundException, UnmodifiableClassException,
             InterruptedException, IOException {
 
-        AgentServer agentServer = new AgentServer(30001, inst);
-        agentServer.init();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                AgentServer agentServer = new AgentServer(30001, inst);
+                agentServer.init();
+            }
+        }).start();
     }
 }

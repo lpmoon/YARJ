@@ -1,6 +1,8 @@
 package com.lpmoon.agent.command;
 
 
+import com.lpmoon.agent.util.ByteUtil;
+
 import java.io.IOException;
 import java.lang.instrument.Instrumentation;
 import java.nio.ByteBuffer;
@@ -37,12 +39,26 @@ public class HelpCommand implements Command {
     public void handle(String options, SocketChannel socketChannel, Instrumentation instrumentation) {
         byte[] help = help().getBytes();
         byte[] content = new byte[help.length + 5];
+        content[0] = 0x01;
+        byte[] length = ByteUtil.toByteArray(help.length);
+        content[1] = length[0];
+        content[2] = length[1];
+        content[3] = length[2];
+        content[4] = length[3];
+        System.arraycopy(help, 0, content, 5, help.length);
 
         try {
-            socketChannel.write(ByteBuffer.wrap(help, 0, help.length));
+            socketChannel.write(ByteBuffer.wrap(content, 0, content.length));
         } catch (IOException e) {
             e.printStackTrace();
         }
 
+        byte[] exit = new byte[1];
+        exit[0] = 0x02;
+        try {
+            socketChannel.write(ByteBuffer.wrap(exit, 0, exit.length));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
