@@ -29,6 +29,7 @@ public class AgentServer {
     }
 
     public void init() {
+        CommandManager.instance = commandManager;
         commandManager.init();
 
         // TODO 替换为可变的port

@@ -19,6 +19,8 @@ import java.util.jar.JarFile;
 public class CommandManager {
     private Map<String, Command> name2Command = new HashMap<>(2^4);
 
+    public static CommandManager instance;
+
     public void init() {
         String basePack = "com.lpmoon.agent.command";
         try {
@@ -84,5 +86,9 @@ public class CommandManager {
         String options = data.substring(data.indexOf(' ' + 1));
 
         name2Command.get(command).handle(options, socketChannel, instrumentation);
+    }
+
+    public Map<String, Command> getName2Command() {
+        return name2Command;
     }
 }

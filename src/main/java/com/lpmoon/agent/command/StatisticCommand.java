@@ -1,7 +1,11 @@
 package com.lpmoon.agent.command;
 
 import com.lpmoon.agent.starter.Agent;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Options;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintWriter;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.Instrumentation;
 import java.lang.reflect.Field;
@@ -17,6 +21,21 @@ public class StatisticCommand implements Command {
     @Override
     public String name() {
         return "statistics";
+    }
+
+    @Override
+    public String help() {
+        Options options = new Options( );
+        options.addOption("c", "class", false, "Classes");
+
+        HelpFormatter helpFormatter = new HelpFormatter();
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        PrintWriter writer = new PrintWriter(os);
+
+        helpFormatter.printHelp(writer, 80, name(), "", options, 1, 1, "");
+        writer.flush();
+
+        return os.toString();
     }
 
     @Override
