@@ -3,6 +3,7 @@ package com.lpmoon.agent.command;
 import java.lang.annotation.Annotation;
 import java.lang.instrument.Instrumentation;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.net.JarURLConnection;
 import java.net.URL;
 import java.nio.ByteBuffer;
@@ -12,6 +13,8 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 public class CommandManager {
+
+
     private Map<String, Class> name2CommandClass = new HashMap<>();
 
     private Map<String, Command> name2Command = new HashMap<>();
@@ -59,7 +62,7 @@ public class CommandManager {
                                     }
 
                                     if (match) {
-                                        System.out.println(className);
+                                        System.out.println(annotation.name());
                                         name2CommandClass.put(annotation.name(), cls);
 
 //                                        Constructor constructor = cls.getConstructor();
@@ -108,6 +111,8 @@ public class CommandManager {
                 try {
                     Constructor constructor = commandClass.getConstructor(String.class, SocketChannel.class, Instrumentation.class);
                     command = (Command) constructor.newInstance(options, socketChannel, instrumentation);
+                    Method initMethod = commandClass.getMethod("init");
+                    initMethod.invoke(command);
                 } catch (Exception e) {
                     e.printStackTrace();
                     // 异常
@@ -122,6 +127,18 @@ public class CommandManager {
 
     public Map<String, Command> getName2Command() {
         return name2Command;
+    }
+
+    public Map<String, Class> getName2CommandClass() {
+        return name2CommandClass;
+    }
+
+    public void setName2CommandClass(Map<String, Class> name2CommandClass) {
+        this.name2CommandClass = name2CommandClass;
+    }
+
+    public void setName2Command(Map<String, Command> name2Command) {
+        this.name2Command = name2Command;
     }
 
     public Command getCommand(String name) {

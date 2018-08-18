@@ -29,14 +29,17 @@ public class HelpCommand implements Command {
         return "help";
     }
 
-    @Override
-    public String help() {
-        Map<String, Command> commandMap = CommandManager.instance.getName2Command();
+    public static String help() {
+        Map<String, Class> commandMap = CommandManager.instance.getName2CommandClass();
 
         StringBuilder sb = new StringBuilder();
-        for (Map.Entry<String, Command> commandEntry : commandMap.entrySet()) {
-            if (!commandEntry.getKey().equals(name())) {
-                sb.append(commandEntry.getValue().help());
+        for (Map.Entry<String, Class> commandEntry : commandMap.entrySet()) {
+            if (!commandEntry.getKey().equals("help")) {
+                try {
+                    sb.append(commandEntry.getValue().getMethod("help").invoke(null));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         }
 

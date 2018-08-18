@@ -54,8 +54,7 @@ public class StatisticCommand implements Command {
         return "statistics";
     }
 
-    @Override
-    public String help() {
+    public static String help() {
         Options options = new Options( );
         options.addOption("c", "class", false, "Classes");
         options.addOption("t", "time", false, "Time");
@@ -64,7 +63,7 @@ public class StatisticCommand implements Command {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         PrintWriter writer = new PrintWriter(os);
 
-        helpFormatter.printHelp(writer, 80, name(), "", options, 1, 1, "");
+        helpFormatter.printHelp(writer, 80, "statistics", "", options, 1, 1, "");
         writer.flush();
 
         return os.toString();
@@ -106,8 +105,8 @@ public class StatisticCommand implements Command {
             }
 
             Options op = new Options( );
-            op.addOption("c", "class", false, "Classes");
-            op.addOption("t", "time", false, "Time");
+            op.addOption("c", "class", true, "Classes");
+            op.addOption("t", "time", true, "Time");
 
             BasicParser basicParser = new BasicParser();
             CommandLine commandLine = basicParser.parse(op, this.options.split(" "));
@@ -183,6 +182,9 @@ public class StatisticCommand implements Command {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+
+            //
+            stop();
         }
     }
 

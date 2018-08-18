@@ -15,6 +15,6 @@ public class CommonResultBuilder {
         result[4] = length[3];
         System.arraycopy(content, 0, result, 5, content.length);
 
-        return content;
+        return result;
     }
 }
