@@ -2,6 +2,8 @@ package com.lpmoon.agent.command;
 
 
 import com.lpmoon.agent.util.ByteUtil;
+import com.lpmoon.agent.util.CommonResultBuilder;
+import com.lpmoon.agent.util.ExitResultBuilder;
 
 import java.io.IOException;
 import java.lang.instrument.Instrumentation;
@@ -9,8 +11,19 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.Map;
 
-@CommandAnnotation
+@CommandAnnotation(name="help")
 public class HelpCommand implements Command {
+    private String options;
+    private SocketChannel socketChannel;
+    private Instrumentation instrumentation;
+
+    public HelpCommand(String options, SocketChannel socketChannel, Instrumentation instrumentation) {
+        this.options = options;
+        this.socketChannel = socketChannel;
+        this.instrumentation = instrumentation;
+    }
+
+
     @Override
     public String name() {
         return "help";
@@ -36,16 +49,9 @@ public class HelpCommand implements Command {
     }
 
     @Override
-    public void handle(String options, SocketChannel socketChannel, Instrumentation instrumentation) {
+    public void handle() {
         byte[] help = help().getBytes();
-        byte[] content = new byte[help.length + 5];
-        content[0] = 0x01;
-        byte[] length = ByteUtil.toByteArray(help.length);
-        content[1] = length[0];
-        content[2] = length[1];
-        content[3] = length[2];
-        content[4] = length[3];
-        System.arraycopy(help, 0, content, 5, help.length);
+        byte[] content = CommonResultBuilder.build(help);
 
         try {
             socketChannel.write(ByteBuffer.wrap(content, 0, content.length));
@@ -53,12 +59,16 @@ public class HelpCommand implements Command {
             e.printStackTrace();
         }
 
-        byte[] exit = new byte[1];
-        exit[0] = 0x02;
+        byte[] exit = ExitResultBuilder.build();
         try {
             socketChannel.write(ByteBuffer.wrap(exit, 0, exit.length));
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public void stop() {
+        throw new UnsupportedOperationException();
     }
 }

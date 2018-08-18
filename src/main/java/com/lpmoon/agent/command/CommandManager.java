@@ -1,24 +1,26 @@
 package com.lpmoon.agent.command;
 
-import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.instrument.Instrumentation;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
 import java.net.JarURLConnection;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 public class CommandManager {
-    private Map<String, Command> name2Command = new HashMap<>(2^4);
+    private Map<String, Class> name2CommandClass = new HashMap<>();
+
+    private Map<String, Command> name2Command = new HashMap<>();
 
     public static CommandManager instance;
 
+    private static Object locker = new Object();
+
+    @SuppressWarnings("unchecked")
     public void init() {
         String basePack = "com.lpmoon.agent.command";
         try {
@@ -41,11 +43,11 @@ public class CommandManager {
                                 //这里我们需要过滤不是class文件和不在basePack包名下的类
                                 if (jarEntryName.contains(".class") && jarEntryName.replaceAll("/", ".").startsWith(basePack)) {
                                     String className = jarEntryName.substring(0, jarEntryName.lastIndexOf(".")).replace("/", ".");
-                                    Class cls = Class.forName(className);
+                                    Class<?> cls = Class.forName(className);
 
                                     boolean match = false;
                                     Class[] interfaces = cls.getInterfaces();
-                                    Annotation annotation = cls.getAnnotation(CommandAnnotation.class);
+                                    CommandAnnotation annotation = cls.getAnnotation(CommandAnnotation.class);
                                     for (Class inter : interfaces) {
                                         if (inter == Command.class) {
                                             System.out.println(className);
@@ -58,10 +60,12 @@ public class CommandManager {
 
                                     if (match) {
                                         System.out.println(className);
-                                        Constructor constructor = cls.getConstructor();
-                                        Object command = constructor.newInstance();
-                                        ((Command)command).init();
-                                        name2Command.put(((Command) command).name(), (Command) command);
+                                        name2CommandClass.put(annotation.name(), cls);
+
+//                                        Constructor constructor = cls.getConstructor();
+//                                        Object command = constructor.newInstance();
+//                                        ((Command)command).init();
+//                                        name2Command.put(((Command) command).name(), (Command) command);
                                     }
                                 }
                             }
@@ -89,16 +93,40 @@ public class CommandManager {
         String data = new String(bytes);
 
         int idx = data.indexOf(' ');
-        String command = data.substring(0, idx < 0 ? data.length() : idx);
+        String commandStr = data.substring(0, idx < 0 ? data.length() : idx);
         String options = "";
         if (idx > 0) {
             options = data.substring(idx + 1);
         }
 
-        name2Command.get(command).handle(options, socketChannel, instrumentation);
+        Command command = null;
+        synchronized (locker) {
+            command = getCommand(commandStr);
+            if (command == null) {
+                Class<?> commandClass = name2CommandClass.get(commandStr);
+
+                try {
+                    Constructor constructor = commandClass.getConstructor(String.class, SocketChannel.class, Instrumentation.class);
+                    command = (Command) constructor.newInstance(options, socketChannel, instrumentation);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    // 异常
+                    return;
+                }
+                name2Command.put(commandStr, command);
+            }
+        }
+
+        command.handle();
     }
 
     public Map<String, Command> getName2Command() {
         return name2Command;
+    }
+
+    public Command getCommand(String name) {
+        synchronized (locker) {
+            return name2Command.get(name);
+        }
     }
 }

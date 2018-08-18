@@ -1,5 +1,6 @@
 package com.lpmoon.agent.transformer;
 
+import com.lpmoon.agent.reporter.Summary;
 import com.lpmoon.agent.util.OldClassHolder;
 import javassist.ClassPool;
 import javassist.CtClass;
@@ -14,9 +15,16 @@ import java.security.ProtectionDomain;
  */
 public class StatisticsClassFileTransformer implements ClassFileTransformer {
 
+    private OldClassHolder oldClassHolder;
+
+    public StatisticsClassFileTransformer(OldClassHolder oldClassHolder) {
+        this.oldClassHolder = oldClassHolder;
+    }
+
     public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
         byte[] byteCode = classfileBuffer;
-        OldClassHolder.storeClass(className, classfileBuffer);
+        oldClassHolder.storeClass(className, classfileBuffer);
+
         System.out.println("before transform " + className + " bytecode length is " + byteCode.length);
         try {
             ClassPool cp = ClassPool.getDefault();
@@ -28,13 +36,13 @@ public class StatisticsClassFileTransformer implements ClassFileTransformer {
                     m.addLocalVariable("elapsedTime", CtClass.longType);
                     m.insertBefore("elapsedTime = System.currentTimeMillis();");
                     m.insertAfter("{elapsedTime = System.currentTimeMillis() - elapsedTime;"
-                        + "com.lpmoon.agent.reporter.SummaryFactory.getSummary(\"Codahale\").report(\"" + className + "\", \"" + m.getName() + "\", elapsedTime);"
-                        + "System.out.println(\"" + className + "." + m.getName() + "cost \" + elapsedTime + \" ms\");}");
+                        + "((StatisticCommand)CommandManager.getCommand(\"statistics\")).getSummary().report(\"" + className + "\", \"" + m.getName() + "\", elapsedTime);}");
                     byteCode = cc.toBytecode();
                     cc.detach();
                 }
             }
         } catch (Exception ex) {
+            ex.printStackTrace();
         }
 
         System.out.println("after transform " + className + " bytecode length is " + byteCode.length);

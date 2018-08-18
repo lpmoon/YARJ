@@ -24,6 +24,8 @@ public interface Summary {
      */
     void report(String clazz, String method, long cost);
 
+    String getSummary();
+
     /**
      * 停止
      */
