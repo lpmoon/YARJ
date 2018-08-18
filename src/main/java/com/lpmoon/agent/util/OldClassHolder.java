@@ -1,4 +1,4 @@
-package com.lpmoon.transformer;
+package com.lpmoon.agent.util;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -7,13 +7,13 @@ import java.util.concurrent.ConcurrentHashMap;
  * Created by zblacker on 2017/5/12.
  */
 public class OldClassHolder {
-    public static Map<String, byte[]> oldClasses = new ConcurrentHashMap();
+    public Map<String, byte[]> oldClasses = new ConcurrentHashMap();
 
-    public static void storeClass(String className, byte[] bytecode) {
+    public void storeClass(String className, byte[] bytecode) {
         oldClasses.put(className, bytecode);
     }
 
-    public static byte[] getLastRecordClass(String className) {
+    public byte[] getLastRecordClass(String className) {
         return oldClasses.get(className);
     }
 }

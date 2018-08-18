@@ -1,4 +1,4 @@
-package com.lpmoon.reporter;
+package com.lpmoon.agent.reporter;
 
 /**
  * Created by zblacker on 2017/6/29.
@@ -23,6 +23,8 @@ public interface Summary {
      * @param cost 耗时
      */
     void report(String clazz, String method, long cost);
+
+    String getSummary();
 
     /**
      * 停止
