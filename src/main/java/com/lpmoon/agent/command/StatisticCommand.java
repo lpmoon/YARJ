@@ -6,6 +6,7 @@ import com.lpmoon.agent.starter.Agent;
 import com.lpmoon.agent.transformer.RestoreFileTransformer;
 import com.lpmoon.agent.transformer.StatisticsClassFileTransformer;
 import com.lpmoon.agent.util.CommonResultBuilder;
+import com.lpmoon.agent.util.ExitResultBuilder;
 import com.lpmoon.agent.util.OldClassHolder;
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
@@ -20,8 +21,6 @@ import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.Vector;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -126,6 +125,40 @@ public class StatisticCommand implements Command {
     @Override
     public void stop() {
         // 处理
+        executorService.shutdown();
+        summary.stop();
+
+        instrumentation.addTransformer(restoreFileTransformer, true);
+
+        try {
+            ClassLoader classLoader = Agent.class.getClassLoader();
+            Class classLoaderClazz = classLoader.getClass();
+            while (classLoaderClazz != ClassLoader.class) {
+                classLoaderClazz = classLoaderClazz.getSuperclass();
+            }
+
+            System.out.println(classLoaderClazz);
+            Field field = classLoaderClazz.getDeclaredField("classes");
+            field.setAccessible(true);
+            Vector v = (Vector) field.get(classLoader);
+            for (int i = 0; i < v.size(); i++) {
+                Class clazz = (Class) v.get(i);
+                if (clazz == null) {
+                    continue;
+                }
+
+                if (!clazz.getName().contains("com.lpmoon")) {
+                    System.out.println(clazz.getName());
+                    instrumentation.retransformClasses((Class) v.get(i));
+                } else {
+                    System.out.println(clazz.getName() + " should not be register");
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+
     }
 
     /**
@@ -140,6 +173,13 @@ public class StatisticCommand implements Command {
 
             try {
                 socketChannel.write(ByteBuffer.wrap(content, 0, content.length));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            byte[] exit = ExitResultBuilder.build();
+            try {
+                socketChannel.write(ByteBuffer.wrap(exit, 0, exit.length));
             } catch (IOException e) {
                 e.printStackTrace();
             }
