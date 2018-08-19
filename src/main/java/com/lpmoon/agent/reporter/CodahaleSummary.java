@@ -46,7 +46,6 @@ public class CodahaleSummary extends AbstractSummary {
 
     @Override
     public void report(String className, String method, long cost) {
-        System.out.println("report");
         Histogram histogram = metrics.histogram(className + "." + method);
         histogram.update(cost);
     }
