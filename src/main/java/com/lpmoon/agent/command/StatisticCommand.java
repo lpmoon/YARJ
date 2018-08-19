@@ -123,6 +123,11 @@ public class StatisticCommand implements Command {
 
     @Override
     public void stop() {
+        writeResult();
+        innerStop();
+    }
+
+    private void innerStop() {
         // 处理
         executorService.shutdown();
         summary.stop();
@@ -156,8 +161,6 @@ public class StatisticCommand implements Command {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-
     }
 
     /**
@@ -167,24 +170,26 @@ public class StatisticCommand implements Command {
 
         @Override
         public void run() {
-            String data = summary.getSummary();
-            byte[] content = CommonResultBuilder.build(data.getBytes());
+            writeResult();
+            innerStop();
+        }
+    }
 
-            try {
-                socketChannel.write(ByteBuffer.wrap(content, 0, content.length));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+    private void writeResult() {
+        String data = summary.getSummary();
+        byte[] content = CommonResultBuilder.build(data.getBytes());
 
-            byte[] exit = ExitResultBuilder.build();
-            try {
-                socketChannel.write(ByteBuffer.wrap(exit, 0, exit.length));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        try {
+            socketChannel.write(ByteBuffer.wrap(content, 0, content.length));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
-            //
-            stop();
+        byte[] exit = ExitResultBuilder.build();
+        try {
+            socketChannel.write(ByteBuffer.wrap(exit, 0, exit.length));
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 

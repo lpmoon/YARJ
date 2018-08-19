@@ -102,24 +102,33 @@ public class CommandManager {
             options = data.substring(idx + 1);
         }
 
+        // 如果是退出命令
+        if (commandStr.equals("exit")) {
+            Command command = name2Command.get(options);
+            if (command == null) {
+                return;
+            }
+
+            command.stop();
+            name2Command.remove(options);
+            return;
+        }
+
         Command command = null;
         synchronized (locker) {
-            command = getCommand(commandStr);
-            if (command == null) {
-                Class<?> commandClass = name2CommandClass.get(commandStr);
+            Class<?> commandClass = name2CommandClass.get(commandStr);
 
-                try {
-                    Constructor constructor = commandClass.getConstructor(String.class, SocketChannel.class, Instrumentation.class);
-                    command = (Command) constructor.newInstance(options, socketChannel, instrumentation);
-                    Method initMethod = commandClass.getMethod("init");
-                    initMethod.invoke(command);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    // 异常
-                    return;
-                }
-                name2Command.put(commandStr, command);
+            try {
+                Constructor constructor = commandClass.getConstructor(String.class, SocketChannel.class, Instrumentation.class);
+                command = (Command) constructor.newInstance(options, socketChannel, instrumentation);
+                Method initMethod = commandClass.getMethod("init");
+                initMethod.invoke(command);
+            } catch (Exception e) {
+                e.printStackTrace();
+                // 异常
+                return;
             }
+            name2Command.put(commandStr, command);
         }
 
         command.handle();
