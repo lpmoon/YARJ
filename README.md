@@ -3,6 +3,7 @@
 目前支持的命令有
 1. help
 2. statistics
+3. parameter
 
 # 使用
 
