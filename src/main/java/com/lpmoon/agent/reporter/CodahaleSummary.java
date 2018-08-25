@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit;
  *
  * 基于Codahale的时间分布统计
  */
-public class CodahaleSummary extends AbstractSummary {
+public class CodahaleSummary {
 
     private MetricRegistry metrics;
     private ConsoleReporter reporter;
@@ -21,8 +21,7 @@ public class CodahaleSummary extends AbstractSummary {
     private PrintStream printStream;
     private Object lock = new Object();
 
-    @Override
-    void doInnerStart() {
+    public void start() {
         outputStream = new ByteArrayOutputStream();
         printStream = new PrintStream(outputStream);
         metrics = new MetricRegistry();
@@ -33,24 +32,16 @@ public class CodahaleSummary extends AbstractSummary {
                 .build();
     }
 
-    @Override
-    void doInnerStop() {
+    public void stop() {
         reporter.stop();
         reporter.close();
     }
 
-    @Override
-    public String getName() {
-        return "Codahale";
-    }
-
-    @Override
-    public void report(String className, String method, long cost) {
-        Histogram histogram = metrics.histogram(className + "." + method);
+    public void reportHistogram(String key, long cost) {
+        Histogram histogram = metrics.histogram(key);
         histogram.update(cost);
     }
 
-    @Override
     public String getSummary() {
         // 避免并发reset
         synchronized (lock) {
@@ -59,11 +50,5 @@ public class CodahaleSummary extends AbstractSummary {
             outputStream.reset();
             return data;
         }
-    }
-
-    public static CodahaleSummary summary = new CodahaleSummary();
-
-    public static Summary getInstance() {
-        return summary;
     }
 }

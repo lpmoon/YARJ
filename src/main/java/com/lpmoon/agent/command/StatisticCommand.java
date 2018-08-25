@@ -1,7 +1,6 @@
 package com.lpmoon.agent.command;
 
 import com.lpmoon.agent.reporter.CodahaleSummary;
-import com.lpmoon.agent.reporter.Summary;
 import com.lpmoon.agent.starter.Agent;
 import com.lpmoon.agent.transformer.RestoreFileTransformer;
 import com.lpmoon.agent.transformer.StatisticsClassFileTransformer;
@@ -32,7 +31,7 @@ public class StatisticCommand implements Command {
     private SocketChannel socketChannel;
     private Instrumentation instrumentation;
 
-    private Summary summary;
+    private CodahaleSummary summary;
     private OldClassHolder oldClassHolder;
     private StatisticsClassFileTransformer transformer;
     private RestoreFileTransformer restoreFileTransformer;
@@ -194,11 +193,11 @@ public class StatisticCommand implements Command {
     }
 
 
-    public Summary getSummary() {
+    public CodahaleSummary getSummary() {
         return summary;
     }
 
-    public void setSummary(Summary summary) {
+    public void setSummary(CodahaleSummary summary) {
         this.summary = summary;
     }
 
