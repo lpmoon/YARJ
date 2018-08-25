@@ -1,5 +1,7 @@
 package com.lpmoon.agent.command;
 
+import com.codahale.metrics.Histogram;
+import com.codahale.metrics.Snapshot;
 import com.lpmoon.agent.reporter.CodahaleSummary;
 import com.lpmoon.agent.starter.Agent;
 import com.lpmoon.agent.transformer.RestoreFileTransformer;
@@ -7,6 +9,7 @@ import com.lpmoon.agent.transformer.StatisticsClassFileTransformer;
 import com.lpmoon.agent.util.CommonResultBuilder;
 import com.lpmoon.agent.util.ExitResultBuilder;
 import com.lpmoon.agent.util.OldClassHolder;
+import com.lpmoon.agent.util.Table;
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.HelpFormatter;
@@ -19,6 +22,10 @@ import java.lang.instrument.Instrumentation;
 import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -175,7 +182,39 @@ public class StatisticCommand implements Command {
     }
 
     private void writeResult() {
-        String data = summary.getSummary();
+        Map<String, Histogram> histogramMap = summary.getHistograms();
+
+        String data = "";
+        Table table = new Table(11);
+        try {
+            table.addColumn("method", 0, true);
+            table.addColumn("size", 0, true);
+            table.addColumn("50%", 0, true);
+            table.addColumn("75%", 0, true);
+            table.addColumn("95%", 0, true);
+            table.addColumn("98%", 0, true);
+            table.addColumn("99%", 0, true);
+            table.addColumn("99.9%", 0, true);
+            table.addColumn("max", 0, true);
+            table.addColumn("mean", 0, true);
+            table.addColumn("min", 0, true);
+
+            List<String> keys = new ArrayList<>(histogramMap.keySet());
+            Collections.sort(keys);
+
+            for (String key : keys) {
+                Snapshot snapshot = histogramMap.get(key).getSnapshot();
+                table.addRow(key, String.valueOf(snapshot.size()), String.valueOf(snapshot.getMedian()), String.valueOf(snapshot.get75thPercentile()),
+                             String.valueOf(snapshot.get95thPercentile()), String.valueOf(snapshot.get98thPercentile()), String.valueOf(snapshot.get99thPercentile()),
+                             String.valueOf(snapshot.get999thPercentile()), String.valueOf(snapshot.getMax()), String.valueOf(snapshot.getMean()), String.valueOf(snapshot.getMin()));
+            }
+
+            data = table.print();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+
         byte[] content = CommonResultBuilder.build(data.getBytes());
 
         try {

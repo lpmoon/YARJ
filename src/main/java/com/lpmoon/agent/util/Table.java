@@ -55,13 +55,21 @@ public class Table {
     public void addColumn(String name, int width, boolean selfAdaption) throws TableException{
         synchronized (this) {
             if (!columnInitialComplete) {
-                if (width <= 0) {
+                if (width <= 0 && !selfAdaption) {
                     throw new TableException("Column width must be greater than 0");
                 }
 
                 columns.add(new Column(name, width, selfAdaption));
                 if (columns.size() == columnSize) {
                     columnInitialComplete = true;
+
+                    // 列表头当做特殊的一行
+                    List<String> columnName = new ArrayList<>();
+                    for (Column column : columns) {
+                        columnName.add(column.name);
+                    }
+
+                    this.addRow(columnName.toArray(new String[columnName.size()]));
                 }
             } else {
                 throw new TableException("Can't add new column");
@@ -151,12 +159,12 @@ public class Table {
         printSeparateLine(sb);
 
         // 打印列表头
-        printColumnHead(sb);
+        printRowInfo(0, sb);
 
         // 打印列表横线
         printSeparateLine(sb);
 
-        for (int rowIndex = 0; rowIndex < rows.size(); rowIndex++) {
+        for (int rowIndex = 1; rowIndex < rows.size(); rowIndex++) {
             // 打印行数据
             printRowInfo(rowIndex, sb);
 
@@ -186,16 +194,6 @@ public class Table {
         }
     }
 
-    private void printColumnHead(StringBuilder sb) {
-        for (int columnIndex = 0; columnIndex < columnSize; columnIndex++) {
-            sb.append("| ");
-            Column column = columns.get(columnIndex);
-            sb.append(String.format("%-" + column.width  + "s", column.name));
-            sb.append(" ");
-        }
-        sb.append("|\n");
-    }
-
     private void printSeparateLine(StringBuilder sb) {
         for (int columnIndex = 0; columnIndex < columnSize; columnIndex++) {
             sb.append("+");
@@ -212,8 +210,8 @@ public class Table {
     public static void main(String[] args) {
         Table table = new Table(5);
         try {
-            table.addColumn("t1", 5, false);
-            table.addColumn("t1", 10, false);
+            table.addColumn("t122222222222222222222", 5, true);
+            table.addColumn("t1", 10, true);
             table.addColumn("t1", 15, true);
             table.addColumn("t1", 20, true);
             table.addColumn("t1", 25, true);

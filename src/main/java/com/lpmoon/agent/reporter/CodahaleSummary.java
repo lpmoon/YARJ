@@ -6,6 +6,7 @@ import com.codahale.metrics.MetricRegistry;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -42,6 +43,11 @@ public class CodahaleSummary {
         histogram.update(cost);
     }
 
+    public Map<String, Histogram> getHistograms() {
+        return metrics.getHistograms();
+    }
+
+    @Deprecated
     public String getSummary() {
         // 避免并发reset
         synchronized (lock) {
@@ -51,4 +57,5 @@ public class CodahaleSummary {
             return data;
         }
     }
+
 }
